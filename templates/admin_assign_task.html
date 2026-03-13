@@ -1,0 +1,53 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Assign Task | ProActive{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+    <div class="mb-6">
+        <a href="/admin/dashboard" class="text-sm text-primary hover:underline">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 p-8 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+        <h1 class="text-2xl font-bold mb-2">Assign Task to All Students</h1>
+        <p class="text-gray-500 text-sm mb-6">This task will be added to every student in your cohort.</p>
+
+        {% if error %}
+        <div class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg text-sm">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="mb-6 p-4 bg-primary/10 rounded-lg text-sm">
+            <strong>{{ cohort_count }}</strong> student(s) will receive this task.
+        </div>
+
+        <form action="/admin/assign-task" method="post" class="space-y-4">
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500" for="title">Title</label>
+                <input id="title" name="title" type="text" required maxlength="200"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary py-3 px-4"
+                    placeholder="e.g. Submit Chapter 5 Reading Response" />
+            </div>
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500" for="due_date">Due Date</label>
+                <input id="due_date" name="due_date" type="date"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary py-3 px-4" />
+            </div>
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-500" for="task_type">Task Type</label>
+                <select id="task_type" name="task_type"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary py-3 px-4">
+                    <option value="assignment">Assignment</option>
+                    <option value="quiz">Quiz</option>
+                    <option value="summative">Summative</option>
+                    <option value="formative">Formative</option>
+                </select>
+            </div>
+            <button type="submit"
+                class="w-full bg-primary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-blue-700 transition">
+                Assign to All Students
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

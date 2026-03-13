@@ -1,0 +1,215 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Dashboard | ProActive{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl">
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold">Welcome back, {{ current_user.email.split('@')[0] | title }}</h2>
+        <p class="text-gray-500">Here's what your AI coach is seeing today.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-8">
+
+            {# AI Risk Card — data injected from Python #}
+            <div class="flex flex-col overflow-hidden rounded-xl border shadow-sm
+                {% if prediction and prediction.risk_level == 'high' %}
+                    border-red-200 bg-red-50
+                {% elif prediction and prediction.risk_level == 'medium' %}
+                    border-orange-200 bg-orange-50
+                {% else %}
+                    border-green-200 bg-green-50
+                {% endif %}">
+                <div class="flex flex-col md:flex-row">
+                    <div class="w-full md:w-1/3 p-8 flex flex-col items-center justify-center text-center
+                        {% if prediction and prediction.risk_level == 'high' %}bg-red-100
+                        {% elif prediction and prediction.risk_level == 'medium' %}bg-orange-100
+                        {% else %}bg-green-100{% endif %}">
+                        <span class="text-sm font-bold uppercase tracking-wider
+                            {% if prediction and prediction.risk_level == 'high' %}text-red-600
+                            {% elif prediction and prediction.risk_level == 'medium' %}text-orange-600
+                            {% else %}text-green-600{% endif %}">AI Confidence</span>
+                        <div class="mt-2 text-5xl font-extrabold
+                            {% if prediction and prediction.risk_level == 'high' %}text-red-700
+                            {% elif prediction and prediction.risk_level == 'medium' %}text-orange-700
+                            {% else %}text-green-700{% endif %}">
+                            {% if prediction %}{{ (prediction.confidence_score * 100) | int }}%{% else %}N/A{% endif %}
+                        </div>
+                        <div class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if prediction and prediction.risk_level == 'high' %}bg-red-200 text-red-800
+                            {% elif prediction and prediction.risk_level == 'medium' %}bg-orange-200 text-orange-800
+                            {% else %}bg-green-200 text-green-800{% endif %}">
+                            {% if prediction %}{{ prediction.risk_level | title }} Risk{% else %}No Prediction{% endif
+                            %}
+                        </div>
+                    </div>
+                    <div class="flex flex-1 flex-col justify-center p-6 lg:p-8">
+                        {% if prediction %}
+                        <h3 class="text-xl font-bold">
+                            {% if prediction.risk_level == 'high' %}High Risk Detected
+                            {% elif prediction.risk_level == 'medium' %}Delay Predicted
+                            {% else %}You're on Track!{% endif %}
+                        </h3>
+                        <p class="mt-2 leading-relaxed text-sm">
+                            {% if prediction.risk_level == 'low' %}
+                            Your engagement patterns look healthy. Keep up the consistent study schedule!
+                            {% else %}
+                            Your recent engagement patterns suggest a risk of delay. Consider reviewing your schedule
+                            and using the MCII chat for strategies.
+                            {% endif %}
+                        </p>
+                        {% else %}
+                        <h3 class="text-xl font-bold">No Prediction Yet</h3>
+                        <p class="mt-2 text-sm">Complete more tasks to get your AI risk assessment.</p>
+                        {% endif %}
+                        <div class="mt-6 flex gap-3">
+                            <a href="/student/mcii"
+                                class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition">
+                                Open MCII Chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# MCII Tip Card — daily rotating tip from server #}
+            <div class="mt-6 flex flex-col overflow-hidden rounded-xl border border-blue-100 dark:border-blue-900/40 bg-white dark:bg-gray-900 shadow-sm">
+                <div class="flex flex-col gap-3 p-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold">Today's MCII Tip</h3>
+                        <span class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/30 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300">
+                            Implementation intention
+                        </span>
+                    </div>
+                    <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{{ mcii_tip }}</p>
+                    <a href="/student/mcii"
+                        class="mt-4 inline-flex w-fit items-center gap-1 text-xs font-semibold text-primary hover:text-blue-700 transition">
+                        <span class="material-symbols-outlined text-sm">forum</span>
+                        <span>Open full MCII chat</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 flex flex-col gap-6">
+            {# Today's Tasks — rendered from DB data #}
+            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold">Today's Tasks</h3>
+                    <span class="text-xs font-bold bg-gray-100 px-2 py-1 rounded">
+                        {{ tasks | selectattr('status', 'equalto', 'pending') | list | length }} Remaining
+                    </span>
+                </div>
+                <ul class="space-y-4">
+                    {% for task in tasks[:4] %}
+                    <li class="flex items-start gap-3">
+                        {# Checkbox submits a small form to toggle task status #}
+                        <form action="/student/tasks/{{ task.task_id }}/toggle" method="post">
+                            <button type="submit"
+                                class="mt-1 size-5 rounded border-2 flex items-center justify-center
+                                    {% if task.status == 'completed' %}border-primary bg-primary{% else %}border-gray-300{% endif %}">
+                                {% if task.status == 'completed' %}
+                                <span class="material-symbols-outlined text-white text-xs">check</span>
+                                {% endif %}
+                            </button>
+                        </form>
+                        <div class="flex flex-col flex-1 {% if task.status == 'completed' %}opacity-50{% endif %}">
+                            <span
+                                class="text-sm font-medium {% if task.status == 'completed' %}line-through{% endif %}">
+                                {{ task.title }}
+                            </span>
+                            {% if task.due_date %}
+                            <span class="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                                <span class="material-symbols-outlined text-xs">schedule</span>
+                                Due: {{ task.due_date.strftime('%b %d') }}.
+                            </span>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="text-sm text-gray-400">No tasks for today.</li>
+                    {% endfor %}
+                </ul>
+                <a href="/student/tasks"
+                    class="mt-4 block w-full py-2.5 border-2 border-dashed border-gray-200 text-gray-400 hover:text-gray-600 text-sm font-medium rounded-lg text-center transition">
+                    View All Tasks
+                </a>
+            </div>
+
+            {# Weekly Activity — risk trend graph #}
+            <div class="rounded-xl border border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800 p-6 shadow-sm">
+                <h3 class="text-lg font-bold mb-3">Risk Trend (14 days)</h3>
+                <div id="trend-badge" class="text-sm font-bold mb-3"></div>
+                <div class="h-64 w-full">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <p id="trend-empty" class="text-sm text-gray-400 text-center py-8 hidden">
+                    Add tasks and complete them to see your risk trend.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Only run prediction fetch once per load (not on the reload itself)
+    if (!sessionStorage.getItem('pred_refreshed')) {
+        sessionStorage.setItem('pred_refreshed', '1');
+        fetch('/api/predict/{{ current_user.user_id }}', { method: 'POST' })
+            .then(r => r.json())
+            .then(() => location.reload())
+            .catch(() => { });
+    } else {
+        sessionStorage.removeItem('pred_refreshed');
+    }
+
+    fetch('/api/students/{{ student_id }}/trend')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.labels.length) {
+                document.getElementById('trend-empty').classList.remove('hidden');
+                return;
+            }
+            const badge = document.getElementById('trend-badge');
+            const colors = { improving: '#16a34a', worsening: '#dc2626', stable: '#136dec' };
+            const arrows = { improving: '↑', worsening: '↓', stable: '→' };
+            const color = colors[data.trend] || '#136dec';
+            badge.textContent = data.trend !== 'insufficient_data'
+                ? arrows[data.trend] + ' ' + data.trend.charAt(0).toUpperCase() + data.trend.slice(1) + ' ' + data.trend_pct + '%'
+                : 'Insufficient data';
+            badge.style.color = color;
+
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.scores.map(function (s) { return Math.round(s * 100); }),
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 0, max: 100, ticks: { callback: function (v) { return v + '%'; } } }
+                    }
+                }
+            });
+        })
+        .catch(function () {
+            document.getElementById('trend-empty').classList.remove('hidden');
+        });
+</script>
+{% endblock %}

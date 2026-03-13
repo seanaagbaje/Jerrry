@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Sign Up | ProActive{% endblock %}
+
+{% block body %}
+<main class="flex-1 flex items-center justify-center p-6 md:p-12">
+    <div
+        class="w-full max-w-[480px] bg-white dark:bg-[#1a222c] p-8 md:p-10 rounded-xl shadow-sm border border-[#dbe0e6] dark:border-gray-800">
+        <div class="text-center mb-8">
+            <h1 class="text-[#111418] dark:text-white text-3xl font-bold leading-tight tracking-tight mb-2">
+                Join ProActive</h1>
+            <p class="text-[#617289] dark:text-gray-400 text-base font-normal">Master your schedule with
+                AI-driven productivity tracking.</p>
+        </div>
+        <form action="/auth/signup" method="post" class="space-y-5">
+            <!-- Full Name Field -->
+            <div class="flex flex-col gap-2">
+                <label class="text-[#111418] dark:text-gray-200 text-sm font-medium leading-normal">Full
+                    Name</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">person</span>
+                    <input id="name"
+                        name="name"
+                        class="form-input flex w-full rounded-lg text-[#111418] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-12 pl-12 pr-4 placeholder:text-[#617289] dark:placeholder:text-gray-500 text-base font-normal transition-all"
+                        placeholder="John Doe" type="text" />
+                </div>
+            </div>
+            <!-- Email Field -->
+            <div class="flex flex-col gap-2">
+                <label class="text-[#111418] dark:text-gray-200 text-sm font-medium leading-normal">Student
+                    Email</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">mail</span>
+                    <input id="email"
+                        name="email"
+                        class="form-input flex w-full rounded-lg text-[#111418] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-12 pl-12 pr-4 placeholder:text-[#617289] dark:placeholder:text-gray-500 text-base font-normal transition-all"
+                        placeholder="name@university.edu" type="email" />
+                </div>
+            </div>
+            <!-- Password Field -->
+            <div class="flex flex-col gap-2">
+                <label class="text-[#111418] dark:text-gray-200 text-sm font-medium leading-normal">Password</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">lock</span>
+                    <input id="password"
+                       name="password"
+                        class="form-input flex w-full rounded-lg text-[#111418] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-12 pl-12 pr-12 placeholder:text-[#617289] dark:placeholder:text-gray-500 text-base font-normal transition-all"
+                        placeholder="••••••••" type="password" />
+                    <button
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                        type="button">
+                        <span class="material-symbols-outlined text-xl">visibility</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Course Invite Code (optional) -->
+            <div class="flex flex-col gap-2">
+                <label class="text-[#111418] dark:text-gray-200 text-sm font-medium leading-normal">Course Invite Code <span class="text-gray-400 font-normal">(optional)</span></label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">confirmation_number</span>
+                    <input name="invite_code"
+                        class="form-input flex w-full rounded-lg text-[#111418] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dbe0e6] dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-12 pl-12 pr-4 placeholder:text-[#617289] dark:placeholder:text-gray-500 text-base font-normal transition-all"
+                        placeholder="Enter code from your instructor" type="text" />
+                </div>
+            </div>
+            <!-- AI Feature Hint -->
+            <div class="flex items-center gap-2 pt-2 text-[#617289] dark:text-gray-400">
+                <span class="material-symbols-outlined text-[18px] text-primary">auto_awesome</span>
+                <span class="text-xs font-medium">AI-powered procrastination insights included</span>
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-semibold">How would you describe your study habits?</label>
+                <select name="prior_profile"
+                    class="w-full h-12 px-4 rounded-lg border border-[#dbe0e6] bg-white focus:border-primary outline-none">
+                    <option value="early">I usually finish things early</option>
+                    <option value="mixed" selected>It depends on the week</option>
+                    <option value="lastminute">I tend to leave things last minute</option>
+                </select>
+            </div>
+            <!-- Submit Button -->
+            <button id="signup-button"
+                class="flex w-full cursor-pointer items-center justify-center rounded-lg h-14 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 active:scale-[0.98] transition-all shadow-md mt-4"
+                type="submit">
+                <span>Create Account</span>
+            </button>
+        </form>
+        {% if error %}
+        <div class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            {{ error }}
+        </div>
+        {% endif %}
+        <!-- Bottom Navigation -->
+        <div class="mt-8 text-center border-t border-[#f0f2f4] dark:border-gray-800 pt-6">
+            <p class="text-[#617289] dark:text-gray-400 text-sm">
+                Already have an account?
+                <a class="text-primary font-bold hover:underline ml-1" href="/">Log in</a>
+            </p>
+        </div>
+        <!-- Small Legal -->
+        <p class="mt-8 text-center text-[#617289] dark:text-gray-500 text-[11px] leading-relaxed">
+            By clicking "Create Account", you agree to ProActive's
+            <a class="underline" href="#">Terms of Service</a> and
+            <a class="underline" href="#">Privacy Policy</a>.
+        </p>
+    </div>
+</main>
+{% endblock %}
+
+
+
+
+
+

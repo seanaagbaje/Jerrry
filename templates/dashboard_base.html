@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+{% if auto_refresh %}
+<meta http-equiv="refresh" content="60">
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="flex h-screen flex-col overflow-hidden">
+
+    {# ── HEADER ── #}
+    <header
+        class="flex h-16 items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark px-6 py-3 shrink-0 z-10">
+        <div class="flex items-center gap-3">
+         <a href="{{ url_for('student_dashboard') }}"> <h2 class="text-xl font-bold leading-tight tracking-tight">ProActive</h2>
+        </div></a>
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex flex-col items-end">
+                {# current_user is passed from every authenticated route #}
+                <span class="text-sm font-semibold">{{ current_user.email }}</span>
+                <span class="text-xs text-gray-500">{{ current_user.role | capitalize }}</span>
+            </div>
+            {# Logout is a simple POST form — no JS needed #}            <form action="/auth/logout" method="post">
+                <button type="submit"
+                    class="flex min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold transition hover:bg-blue-700">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+
+        {# ── SIDEBAR ── #}
+        <aside
+            class="flex w-64 flex-col justify-between border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-background-dark p-4 shrink-0">
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-3 px-3 py-4">
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20"
+                        style="background-image: url('{% if student and student.profile_pic %}{{ student.image_path }}{% else %}https://ui-avatars.com/api/?name={{ current_user.email }}&background=136dec&color=fff{% endif %}');"></div>
+                    <div class="flex flex-col">
+                        <h1 class="text-base font-medium leading-none">My Progress</h1>
+                        <p class="text-gray-500 text-xs mt-1">
+                            {% if current_user.role == 'admin' %}Administrator{% else %}Student{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <nav class="flex flex-col gap-2">
+                    {% if current_user.role == 'admin' %}
+                    {% set nav_items = [
+                    ('/admin/dashboard', 'dashboard', 'Overview'),
+                    ('/admin/profile', 'badge', 'My Invite Code')
+                    ] %}
+                    {% else %}
+                    {% set nav_items = [
+                    ('/student/dashboard', 'dashboard', 'Dashboard'),
+                    ('/student/tasks', 'task_alt', 'Tasks'),
+                    ('/student/mcii', 'forum', 'MCII Chat')
+                    ] %}
+                    {% endif %}
+
+                    {% for href, icon, label in nav_items %}
+                    <a href="{{ href }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition
+                               {% if request.url.path == href %}
+                                   bg-primary/10 text-primary
+                               {% else %}
+                                   text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800
+                               {% endif %}">
+                        <span class="material-symbols-outlined text-[24px]">{{ icon }}</span>
+                        <p class="text-sm font-medium">{{ label }}</p>
+                    </a>
+                    {% endfor %}
+                </nav>
+            </div>
+
+            <div class="flex flex-col gap-1 border-t border-gray-200 dark:border-gray-800 pt-4">
+                {% if current_user.role == 'student' %}
+                <a href="/student/profile"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <span class="material-symbols-outlined text-[24px]">account_circle</span>
+                    <p class="text-sm font-medium">Profile</p>
+                </a>
+                {% endif %}
+            </div>
+        </aside>
+
+        {# ── MAIN CONTENT — each page fills this in ── #}
+        <main class="flex-1 {% block main_class %}overflow-y-auto p-6 lg:p-10{% endblock %}">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+</div>
+{% endblock %}

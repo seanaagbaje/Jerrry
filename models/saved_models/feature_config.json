@@ -1,0 +1,17 @@
+{
+  "feature_names": [
+    "days_until_deadline",
+    "days_since_last_sub",
+    "submitted_today",
+    "completion_rate",
+    "overdue_count"
+  ],
+  "n_features": 5,
+  "window_sizes": [
+    3,
+    7
+  ],
+  "label": "submitted_late",
+  "positive_class": "late submission (y=1)",
+  "threshold": 0.5
+}

@@ -1,0 +1,274 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Student Detail | ProActive{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl">
+
+    {# SECTION 1 — Student header card #}
+    <div class="flex items-center justify-between mb-6">
+        <a href="/admin/dashboard" class="text-sm text-primary hover:underline">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
+        <div class="flex items-center gap-4 flex-wrap">
+            {% if student.profile_pic %}
+            <div class="size-16 rounded-full bg-cover bg-center shrink-0 border-2 border-gray-200 dark:border-gray-700"
+                style="background-image: url('{{ student.image_path }}')"></div>
+            {% else %}
+            <div class="size-16 rounded-full bg-cover bg-center shrink-0 border-2 border-gray-200 dark:border-gray-700"
+                style="background-image: url('https://ui-avatars.com/api/?name={{ (student.full_name or student.email) | urlencode }}&background=136dec&color=fff')">
+            </div>
+            {% endif %}
+            <div class="flex-1 min-w-0">
+                <h1 class="text-2xl font-bold">
+                    {{ student.full_name if student.full_name else student.email }}
+                </h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ student.email }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Enrolled {{ student.enrollment_date.strftime('%b %d, %Y') if student.enrollment_date else '—' }}
+                </p>
+                <div class="flex flex-wrap items-center gap-2 mt-2">
+                    {% if student.prior_profile %}
+                    <span
+                        class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                        {{ student.prior_profile | title }}
+                    </span>
+                    {% endif %}
+                    <span class="text-xs text-gray-500">{{ student.days_active or 0 }} days active</span>
+                    {% if student.current_risk_level == 'high' %}
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">High
+                        risk</span>
+                    {% elif student.current_risk_level == 'medium' %}
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">Medium
+                        risk</span>
+                    {% else %}
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">Low
+                        risk</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# SECTION 2 — Latest prediction card (orange border) #}
+    <div
+        class="bg-white dark:bg-gray-900 p-6 rounded-xl border-2 border-orange-200 dark:border-orange-800 shadow-sm mb-6">
+        <h2 class="text-lg font-bold mb-3">Latest Prediction</h2>
+        {% if not predictions %}
+        <p class="text-sm text-gray-500">No predictions generated yet.</p>
+        {% else %}
+        {% set pred = predictions[0] %}
+        <div class="flex flex-wrap items-center gap-4 mb-3">
+            <span class="text-3xl font-bold text-orange-600 dark:text-orange-400">{{ (pred.confidence_score * 100) | int
+                }}%</span>
+            {% if pred.risk_level == 'high' %}
+            <span
+                class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">High
+                risk</span>
+            {% elif pred.risk_level == 'medium' %}
+            <span
+                class="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">Medium
+                risk</span>
+            {% else %}
+            <span
+                class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">Low
+                risk</span>
+            {% endif %}
+            <span class="text-sm text-gray-500">{{ pred.prediction_date.strftime('%b %d, %Y') }}</span>
+            <span class="text-sm text-gray-500">Model: {{ pred.model_used }}</span>
+        </div>
+        {% if pred.features_json %}
+        <div class="overflow-x-auto mt-4">
+            <table
+                class="w-full text-left text-xs border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <thead class="bg-gray-50 dark:bg-gray-800/60">
+                    <tr>
+                        <th class="px-3 py-2 font-semibold">days_until_deadline</th>
+                        <th class="px-3 py-2 font-semibold">days_since_last_sub</th>
+                        <th class="px-3 py-2 font-semibold">submitted_today</th>
+                        <th class="px-3 py-2 font-semibold">completion_rate</th>
+                        <th class="px-3 py-2 font-semibold">overdue_count</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    <tr>
+                        <td class="px-3 py-2">{{ pred.features_json.get('days_until_deadline', '—') }}</td>
+                        <td class="px-3 py-2">{{ pred.features_json.get('days_since_last_sub', '—') }}</td>
+                        <td class="px-3 py-2">{{ pred.features_json.get('submitted_today', '—') }}</td>
+                        <td class="px-3 py-2">{{ pred.features_json.get('completion_rate', '—') }}</td>
+                        <td class="px-3 py-2">{{ pred.features_json.get('overdue_count', '—') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    {# SECTION 3 — Task summary (3 stat cards) #}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-gray-500 text-sm font-medium">Total Tasks</p>
+            <p class="text-2xl font-bold mt-1">{{ task_stats.total }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-gray-500 text-sm font-medium">Completed</p>
+            <p class="text-2xl font-bold mt-1 text-green-600">{{ task_stats.completed }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-gray-500 text-sm font-medium">Overdue</p>
+            <p class="text-2xl font-bold mt-1 {% if task_stats.overdue > 0 %}text-red-600{% endif %}">{{
+                task_stats.overdue }}</p>
+        </div>
+    </div>
+
+    {# SECTION 4 — Recent tasks table (last 10) #}
+    <div
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm mb-6">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-800">
+            <h2 class="text-sm font-bold">Recent Tasks</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/60 text-gray-500 uppercase tracking-wide">
+                        <th class="px-4 py-2">Title</th>
+                        <th class="px-4 py-2">Due Date</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Completed At</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for task in tasks %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
+                        <td class="px-4 py-2 text-[13px] font-medium">{{ task.title }}</td>
+                        <td class="px-4 py-2">{{ task.due_date.strftime('%b %d, %Y') if task.due_date else '—' }}</td>
+                        <td class="px-4 py-2">
+                            {% if task.status == 'completed' %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">Completed</span>
+                            {% elif task.status == 'overdue' %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase">Overdue</span>
+                            {% elif task.status == 'in_progress' %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold uppercase">In
+                                progress</span>
+                            {% else %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-bold uppercase">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">{{ task.completed_at.strftime('%b %d, %Y %I:%M %p') if task.completed_at
+                            else '—' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-6 text-center text-gray-400 text-xs">No tasks yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# SECTION 5 — Prediction history table #}
+    <div
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm mb-6">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-800">
+            <h2 class="text-sm font-bold">Prediction History</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/60 text-gray-500 uppercase tracking-wide">
+                        <th class="px-4 py-2">Date</th>
+                        <th class="px-4 py-2">Risk Level</th>
+                        <th class="px-4 py-2">Confidence %</th>
+                        <th class="px-4 py-2">Model Used</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for pred in predictions %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
+                        <td class="px-4 py-2">{{ pred.prediction_date.strftime('%b %d, %Y') }}</td>
+                        <td class="px-4 py-2">
+                            {% if pred.risk_level == 'high' %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase">High</span>
+                            {% elif pred.risk_level == 'medium' %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold uppercase">Medium</span>
+                            {% else %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">Low</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">{{ (pred.confidence_score * 100) | int }}%</td>
+                        <td class="px-4 py-2">{{ pred.model_used }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-6 text-center text-gray-400 text-xs">No prediction history.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# SECTION 6 — Weekly bundle history #}
+    <div
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm mb-6">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-800">
+            <h2 class="text-sm font-bold">Weekly Bundle History</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/60 text-gray-500 uppercase tracking-wide">
+                        <th class="px-4 py-2">Week #</th>
+                        <th class="px-4 py-2">Start Date</th>
+                        <th class="px-4 py-2">End Date</th>
+                        <th class="px-4 py-2">Completion Rate</th>
+                        <th class="px-4 py-2">Submitted Late</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for b in bundles %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
+                        <td class="px-4 py-2 font-medium">{{ b.week_number }}</td>
+                        <td class="px-4 py-2">{{ b.start_date.strftime('%b %d, %Y') }}</td>
+                        <td class="px-4 py-2">{{ b.end_date.strftime('%b %d, %Y') }}</td>
+                        <td class="px-4 py-2">{{ (b.completion_rate * 100) | int if b.completion_rate is not none else 0
+                            }}%</td>
+                        <td class="px-4 py-2">
+                            {% if b.is_closed == 0 %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[10px] font-bold uppercase">In
+                                Progress</span>
+                            {% elif b.submitted_late == 1 %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold uppercase">Late</span>
+                            {% else %}
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">On
+                                Time</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-6 text-center text-gray-400 text-xs">No bundle history.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

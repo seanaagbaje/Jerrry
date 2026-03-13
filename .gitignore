@@ -1,0 +1,65 @@
+.venv/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model files (too large for Git)
+*.h5
+*.pkl
+*.joblib
+backend/models/saved_models/*.h5
+backend/models/saved_models/*.pkl
+
+# Data files (too large for Git)
+data/oulad/*.csv
+data/processed/*.csv
+*.zip
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (if using frontend build tools)
+node_modules/
+package-lock.json
+
+# Coverage reports
+htmlcov/
+.coverage
+.pytest_cache/

@@ -1,0 +1,200 @@
+{% extends "dashboard_base.html" %}
+{% block title %}MCII Chat | ProActive{% endblock %}
+
+{% block extra_head %}
+<style>
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+{% endblock %}
+
+{% block main_class %}flex flex-col overflow-hidden{% endblock %}
+
+{% block content %}
+<div class="p-6 lg:px-10 lg:pt-8 shrink-0">
+    <div class="mx-auto max-w-4xl">
+        <h2 class="text-2xl font-bold font-display">MCII Intervention Assistant</h2>
+        <p class="text-gray-500 text-sm mt-1">Harness the power of Mental Contrasting and Implementation
+            Intentions.</p>
+    </div>
+</div>
+<div class="flex-1 overflow-y-auto px-6 lg:px-10 scrollbar-hide">
+    <div id="messages-container" class="mx-auto max-w-4xl flex flex-col gap-6 py-4">
+        {% for intervention in interventions %}
+        {# User message #}
+        <div class="flex items-start gap-3 max-w-[80%] self-end flex-row-reverse">
+            <div class="size-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-sm text-primary">person</span>
+            </div>
+            <div class="bg-primary text-white px-4 py-3 rounded-2xl rounded-tr-none text-sm leading-relaxed">
+                {{ intervention.prompt_text }}
+            </div>
+        </div>
+
+        {# AI response #}
+        {% if intervention.user_response %}
+        <div class="flex items-start gap-3 max-w-[80%]">
+            <div class="size-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-sm text-slate-600">smart_toy</span>
+            </div>
+            <div class="bg-slate-100 px-4 py-3 rounded-2xl rounded-tl-none text-sm leading-relaxed text-gray-800 prose prose-sm max-w-none"
+                data-markdown>
+                {{ intervention.user_response }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        {# No history — show greeting #}
+        <div class="flex items-start gap-3 max-w-[80%]">
+            <div class="size-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-sm text-slate-600">smart_toy</span>
+            </div>
+            <div class="bg-slate-100 px-4 py-3 rounded-2xl rounded-tl-none text-sm leading-relaxed text-gray-800">
+                {{ greeting }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{# Suggestion cards — only on fresh conversation #}
+<div id="suggestion-cards" class="px-6 lg:px-10 shrink-0">
+    <div class="mx-auto max-w-4xl mb-3">
+        <div class="flex gap-2 flex-wrap">
+            <button
+                onclick="document.getElementById('chat-input').value='What is MCII and how does it work?'; sendMessage()"
+                class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">help</span>
+                What is MCII?
+            </button>
+            <button
+                onclick="document.getElementById('chat-input').value='Help me make a study plan for today'; sendMessage()"
+                class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">calendar_today</span>
+                Make a study plan
+            </button>
+            <button
+                onclick="document.getElementById('chat-input').value='I keep procrastinating on my work'; sendMessage()"
+                class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">psychology</span>
+                I keep procrastinating
+            </button>
+            <button
+                onclick="document.getElementById('chat-input').value='I have a deadline coming up and I am stressed'; sendMessage()"
+                class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">timer</span>
+                Deadline stress
+            </button>
+            <button
+                onclick="document.getElementById('chat-input').value='I am struggling to stay focused'; sendMessage()"
+                class="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">crisis_alert</span>
+                Struggling to focus
+            </button>
+        </div>
+    </div>
+</div>
+<div class="p-6 lg:px-10 lg:pb-10 shrink-0">
+    <div class="mx-auto max-w-4xl">
+        <div class="relative flex items-center">
+            <textarea id="chat-input" rows="1"
+                class="w-full pl-5 pr-14 py-4 rounded-xl border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm focus:ring-primary focus:border-primary text-sm resize-none overflow-hidden"
+                placeholder="Type your response..."></textarea>
+            <button id="send-btn"
+                class="absolute right-2 size-10 flex items-center justify-center bg-primary text-white rounded-lg hover:bg-blue-700 transition shadow-md">
+                <span class="material-symbols-outlined text-xl">send</span>
+            </button>
+        </div>
+        <div class="mt-3 flex justify-center gap-4 text-[10px] text-gray-400 font-medium uppercase tracking-widest">
+            <span>AI-Powered Strategy</span>
+            <span>•</span>
+            <span>MCII Framework</span>
+            <span>•</span>
+            <span>24/7 Support</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-markdown]').forEach(el => {
+            el.innerHTML = marked.parse(el.textContent.trim());
+        });
+    });
+
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+
+    const chatInput = document.getElementById('chat-input');
+
+    chatInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    chatInput.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+    });
+
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        appendMessage(msg, 'user');
+        input.value = '';
+        input.style.height = 'auto';
+
+        const btn = document.getElementById('send-btn');
+        btn.disabled = true;
+
+        fetch('/student/mcii/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg })
+        })
+            .then(r => { if (!r.ok) throw new Error('API error'); return r.json(); })
+            .then(data => {
+                appendMessage(data.response, 'ai');
+                btn.disabled = false;
+            })
+            .catch(() => {
+                appendMessage('Could not reach AI coach. Please try again.', 'ai');
+                btn.disabled = false;
+            });
+    }
+
+    function appendMessage(text, sender) {
+        const container = document.getElementById('messages-container');
+        const div = document.createElement('div');
+        div.className = sender === 'user'
+            ? 'flex items-start gap-3 max-w-[80%] self-end flex-row-reverse'
+            : 'flex items-start gap-3 max-w-[80%]';
+        div.innerHTML = sender === 'user'
+            ? '<div class="size-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-sm text-primary">person</span></div><div class="bg-primary text-white px-4 py-3 rounded-2xl rounded-tr-none text-sm leading-relaxed">' + escapeHtml(text) + '</div>'
+            : '<div class="size-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-sm text-slate-600">smart_toy</span></div><div class="bg-slate-100 px-4 py-3 rounded-2xl rounded-tl-none text-sm leading-relaxed text-gray-800 prose prose-sm max-w-none">' + marked.parse(text) + '</div>';
+        container.appendChild(div);
+        const scrollParent = container.parentElement;
+        if (scrollParent) scrollParent.scrollTop = scrollParent.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Error | ProActive{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+        <h1 class="text-6xl font-black text-primary">{{ status_code }}</h1>
+        <p class="text-gray-500 mt-2">{{ detail }}</p>
+        <a href="/login" class="mt-6 inline-block text-primary font-bold hover:underline">
+            Go home
+        </a>
+    </div>
+</div>
+{% endblock %}
